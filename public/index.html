@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css" />
+        <meta name="viewport" content="width=device-width">
+        <title>Web OS</title>
+    </head>
+
+    <body>
+        <div id="screen">
+            <div id="desktop"></div>
+            <div id="taskbar">
+                <button id="btn-start">Start</button>
+            </div>
+        </div>
+
+        <dialog id="menu-start">
+            <div id="app-list"></div>
+        </dialog>
+
+        <template id="window">
+            <div class="window focused">
+                <div class="titlebar">Untitled</div>
+                <div class="content"></div>
+
+                <div class="handle-right"></div>
+            </div>
+        </template>
+        
+        <!--script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+	    <script>eruda.init();</script-->
+        
+        <script src="main.js" type="module"></script>
+    </body>
+</html>
