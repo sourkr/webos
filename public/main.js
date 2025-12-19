@@ -62,6 +62,21 @@ function loadApps() {
     });
 }
 
+function exec_base(worker, pid) {
+    worker.onmessage = ({ data }) => {
+        switch (data.type) {
+            case "syscall":
+                const func = syscalls.get(data.n)
+                if (!func) throw new Error(`'${data.n}' is not a valid syscall number`)
+                func(pid, data.reg, data.pc);
+                break
+            case "log":
+                console.log(...data.msg)
+                break
+        }
+    }
+}
+
 async function exec(path) {
     const bin = localStorage.getItem(path)
     const worker = new Worker("vm.js")
@@ -87,18 +102,7 @@ async function exec(path) {
 
     worker.postMessage({ type: "init", mem, pt, pc: 0 })
     
-    worker.onmessage = ({ data }) => {
-        switch (data.type) {
-            case "syscall":
-                const func = syscalls.get(data.n)
-                if (!func) throw new Error(`'${data.n}' is not a valid syscall number`)
-                func(pid, data.reg, data.pc);
-                break
-            case "log":
-                console.log(...data.msg)
-                break
-        }
-    }
+    exec_base(worker, pid)
     
     return pid
 }
@@ -125,6 +129,8 @@ function fork(pid, _, pc) {
         type: "init",
         pc, pt, mem
     })
+
+    exec_base(worker, 2)
 }
 
 function window_create(pid, reg) {

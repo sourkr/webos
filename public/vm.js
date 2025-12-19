@@ -1,3 +1,5 @@
+const DEBUG_STACK = false
+
 const reg = new DataView(new ArrayBuffer(32))
 
 const R0 = 0
@@ -30,6 +32,7 @@ let pc = 0
 async function init(data) {
 	mem = data.mem
     pt = data.pt
+    pc = data.pc
 
     syscalls.set(0x20, sleep)
 
@@ -150,7 +153,8 @@ async function base0(_pc, opcode, meta) {
             log(_pc, "call", addr)
             push(B16, pc)
             pc = addr
-            // printStack()
+
+            if (DEBUG_STACK) printStack()
             break
         }
 
@@ -232,9 +236,9 @@ function mem_set(size, addr, v) {
             throw "segfault"
         }
 
-        mem.getUint8((p.index << 9) | (addr & 0x1ff), v)
+        mem.setUint8((p.index << 9) | (addr & 0x1ff), v)
     } else {
-        mem_set(B8, addr, v >> 8) | mem_set(B8, addr + 1, v & 0xf)
+        mem_set(B8, addr, v >> 8) | mem_set(B8, addr + 1, v & 0xff)
     }
 }
 
@@ -306,5 +310,8 @@ function reg_name(size, id) {
 }
 
 function printStack() {
-    log(reg_get(B16, SP), new Uint8Array(mem.buffer, reg_get(B16, SP) + 1))
+    const sp = reg_get(B16, SP)
+    const pe = (sp >> 9) | 0x1ff
+    
+    log(sp, new Uint8Array(mem.buffer, sp + 1, 512 - ((sp + 1) & 0x1ff)))
 }
